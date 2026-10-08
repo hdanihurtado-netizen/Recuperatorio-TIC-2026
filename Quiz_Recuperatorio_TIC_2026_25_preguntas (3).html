@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Recuperatorio TIC — Intensificación de Saberes 2026</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f6f9;margin:0;color:#20252b}
+.container{max-width:900px;margin:auto;background:white;padding:28px 34px;min-height:100vh}
+h1{margin-bottom:5px}.sub{color:#56616b}
+.card{border:1px solid #d9dee3;border-radius:12px;padding:18px;margin:18px 0;background:#fbfcfd}
+.option{display:block;padding:9px;margin:7px 0;border-radius:7px;background:#f0f3f5;cursor:pointer}
+.option:hover{background:#e5eaee}
+button{border:0;border-radius:9px;padding:12px 18px;font-size:16px;cursor:pointer;margin:6px 6px 6px 0}
+#corr{background:#1769aa;color:white}.secondary{background:#e6eaee}
+.correct{background:#d9f2df!important}.wrong{background:#fde0e0!important}
+.feedback{font-weight:bold;margin-top:8px}
+#result{display:none;padding:20px;border-radius:12px;background:#eef5ff;margin:22px 0}
+.badge{display:inline-block;padding:5px 10px;border-radius:20px;background:#e9eef3;margin-right:6px;font-size:13px}
+input[type=text]{padding:10px;width:90%;border:1px solid #ccd3d9;border-radius:7px}
+.small{font-size:13px;color:#68737d}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🧠 QUIZ RECUPERATORIO — TIC</h1>
+<div class="sub">Intensificación de Saberes 2026 · 4.º año</div>
+<p><span class="badge">Autocorrección</span><span class="badge">25 preguntas</span><span class="badge">100 puntos</span></p>
+<p><b>Objetivo:</b> demostrar que comprendés los saberes fundamentales de TIC. Leé cada situación y seleccioná una sola respuesta.</p>
+<p class="small">Podés resolverlo sin ayuda. Al finalizar, presioná “Corregir automáticamente”. El sistema mostrará puntaje, porcentaje, respuestas correctas y qué temas conviene revisar.</p>
+
+<div id="quiz"></div>
+<div id="result"></div>
+<button id="corr" onclick="grade()">✅ Corregir automáticamente</button>
+<button class="secondary" onclick="location.reload()">🔄 Intentar nuevamente</button>
+</div>
+
+<script>
+const questions = [
+{t:"TIC: concepto",q:"Una escuela combina computadoras, una red, programas y servicios digitales para producir y compartir información. ¿Cuál es la mejor interpretación?",o:["Se trata principalmente de Internet, porque toda la actividad depende de una red","Se trata de TIC, porque integra tecnologías para procesar, almacenar y comunicar información","Se trata de Informática, porque solo intervienen computadoras","Se trata de hardware, porque los equipos son el elemento central"],a:1,topic:"TIC"},
+{t:"TIC: aplicación",q:"Dos estudiantes trabajan sobre un documento compartido y pueden modificarlo mientras se comunican a distancia. ¿Qué combinación de posibilidades de las TIC se observa?",o:["Almacenamiento y salida, sin comunicación","Procesamiento y comunicación interactiva","Entrada y procesamiento exclusivamente local","Comunicación, pero sin procesamiento de información"],a:1,topic:"TIC"},
+{t:"Informática",q:"Un sistema recibe datos, los procesa automáticamente y produce un resultado que ayuda a tomar una decisión. ¿Qué concepto explica mejor la actividad?",o:["Internet, porque necesariamente existe una red","Informática, porque se ocupa del tratamiento automático de la información","Web, porque el resultado puede consultarse desde un navegador","Hardware, porque los datos deben ingresar a un dispositivo"],a:1,topic:"Informática"},
+{t:"Internet",q:"Un usuario puede acceder a distintos servicios digitales desde una misma conexión. ¿Cuál afirmación explica mejor qué es Internet?",o:["Es el conjunto de páginas que aparecen en un navegador","Es una red de redes interconectadas que permite transferir datos mediante tecnologías comunes","Es un programa que administra los archivos de una computadora","Es el sistema utilizado exclusivamente para consultar sitios Web"],a:1,topic:"Internet"},
+{t:"Web",q:"Una persona abre un navegador y consulta documentos enlazados que pueden incluir texto, imágenes y videos. ¿Qué está utilizando específicamente?",o:["La Web, como sistema de información que funciona sobre Internet","Internet como si fuera exclusivamente una colección de páginas","El hardware de comunicación del equipo","El sistema operativo como servicio de información"],a:0,topic:"Web"},
+{t:"Internet vs. Web",q:"¿Cuál situación permite diferenciar mejor Internet de la Web?",o:["Navegar por páginas Web es posible porque la Web e Internet son exactamente lo mismo","Internet proporciona la infraestructura de redes; la Web es uno de los servicios que funciona sobre ella","Internet corresponde al software y la Web al hardware","La Web permite transferir cualquier dato, mientras Internet solo permite páginas"],a:1,topic:"Internet/Web"},
+{t:"Datos e información",q:"Un equipo registra temperaturas de un proceso y luego genera un gráfico para analizarlas. ¿Cuál opción representa mejor la relación entre datos e información?",o:["Las temperaturas registradas son información y el gráfico convierte esa información en datos","Las temperaturas registradas son datos que, al ser procesados y organizados, pueden convertirse en información útil","Los datos y la información son siempre exactamente lo mismo","El gráfico es un dato porque no contiene información procesada"],a:1,topic:"Información"},
+{t:"Unidades",q:"Un archivo tiene 2048 bytes. Considerando las equivalencias binarias habituales, ¿cuál es su tamaño?",o:["2 KB","8 KB","256 KB","16 KB"],a:0,topic:"Unidades"},
+{t:"Unidades",q:"Si un dispositivo almacena 4 MB, ¿cuál de estas cantidades representa una unidad menor?",o:["4 GB","4 KB","4 TB","4 PB"],a:1,topic:"Unidades"},
+{t:"Unidades",q:"Un archivo ocupa 16 bytes. ¿Cuántos bits representa esa cantidad?",o:["32 bits","64 bits","128 bits","256 bits"],a:2,topic:"Unidades"},
+{t:"Hardware",q:"Una estudiante afirma: “El hardware es todo lo que hace funcionar a la computadora, incluso los programas”. ¿Cuál corrección es más precisa?",o:["Es correcta, porque los programas forman parte física del equipo","Es incorrecta: el hardware comprende los componentes físicos, mientras los programas pertenecen al software","Es incorrecta porque hardware significa únicamente periféricos externos","Es correcta siempre que el equipo tenga conexión a Internet"],a:1,topic:"Hardware/Software"},
+{t:"Hardware/Software",q:"Para preparar una presentación, una estudiante utiliza teclado, monitor, sistema operativo y PowerPoint. ¿Cuál clasificación es correcta?",o:["Teclado y monitor son software; sistema operativo y PowerPoint son hardware","Teclado y monitor son hardware; sistema operativo y PowerPoint son software","Todo pertenece al hardware porque interviene físicamente en la tarea","Todo pertenece al software porque la actividad se realiza mediante programas"],a:1,topic:"Hardware/Software"},
+{t:"Hardware",q:"Durante una videollamada, ¿qué combinación representa mejor dispositivos de entrada y salida?",o:["Micrófono como entrada y parlantes como salida","Parlantes como entrada y micrófono como salida","Monitor como entrada y teclado como salida","Webcam como salida y parlantes como entrada"],a:0,topic:"Hardware"},
+{t:"Hardware",q:"Una pantalla permite mostrar información y, además, seleccionar botones tocándola. ¿Por qué puede considerarse un dispositivo de entrada y salida?",o:["Porque cualquier monitor cumple ambas funciones","Porque recibe acciones del usuario y también muestra información","Porque almacena los programas mientras está encendida","Porque reemplaza al sistema operativo"],a:1,topic:"Hardware"},
+{t:"Hardware",q:"Si se retira un componente interno del gabinete, ¿cuál de los siguientes tendría mayor impacto directo sobre la memoria de trabajo del equipo?",o:["Memoria RAM","Webcam","Teclado","Parlantes"],a:0,topic:"Hardware"},
+{t:"Hardware",q:"¿Cuál conjunto está formado únicamente por componentes que normalmente se encuentran dentro del gabinete?",o:["Monitor, teclado y mouse","CPU, memoria RAM y placa madre","Webcam, micrófono y parlantes","Pendrive, monitor y teclado"],a:1,topic:"Hardware"},
+{t:"Software de sistema",q:"Una aplicación necesita acceder a la memoria, archivos y dispositivos de la computadora. ¿Qué software cumple principalmente la función de administrar esos recursos?",o:["Un procesador de textos","El sistema operativo","Una presentación multimedia","Una planilla de cálculo"],a:1,topic:"Software de sistema"},
+{t:"Software de sistema",q:"Una computadora tiene instalados varios programas, pero necesita un software que coordine el hardware y permita la interacción con el usuario. ¿De qué se trata?",o:["Del navegador Web","Del sistema operativo","De una planilla de cálculo","De un periférico de salida"],a:1,topic:"Software de sistema"},
+{t:"Generaciones",q:"Una computadora de una generación temprana utiliza tubos de vacío para procesar información. ¿A qué generación corresponde?",o:["Primera generación","Segunda generación","Tercera generación","Cuarta generación"],a:0,topic:"Generaciones"},
+{t:"Generaciones",q:"Si una computadora reemplaza los tubos de vacío por transistores, ¿qué cambio histórico representa?",o:["El paso a la segunda generación","El paso a la tercera generación","El paso a la cuarta generación","El paso a la quinta generación"],a:0,topic:"Generaciones"},
+{t:"Generaciones",q:"¿Qué relación es correcta entre tecnología y generación de computadoras?",o:["Circuitos integrados → segunda generación","Transistores → tercera generación","Circuitos integrados → tercera generación","Microprocesadores → segunda generación"],a:2,topic:"Generaciones"},
+{t:"Generaciones",q:"Una computadora incorpora un microprocesador como avance tecnológico fundamental. Dentro del esquema de generaciones trabajado, ¿a cuál corresponde?",o:["Primera generación","Segunda generación","Tercera generación","Cuarta generación"],a:3,topic:"Generaciones"},
+{t:"Generaciones",q:"En el esquema de generaciones trabajado en el material, una característica asociada a la quinta generación es:",o:["El uso de tubos de vacío","El reemplazo de los transistores por circuitos integrados","La incorporación de microprocesadores como característica central","La asociación con desarrollos de Inteligencia Artificial"],a:3,topic:"Generaciones"},
+{t:"Aplicaciones",q:"Un estudiante debe redactar un informe, realizar cálculos con datos y luego preparar una exposición con diapositivas. ¿Qué combinación resulta más adecuada?",o:["Word para el informe, Excel para los cálculos y PowerPoint para la exposición","Excel para el informe, Word para los cálculos y AutoCAD para la exposición","PowerPoint para el informe, AutoCAD para los cálculos y Excel para la exposición","AutoCAD para el informe, PowerPoint para los cálculos y Word para la exposición"],a:0,topic:"Software de aplicación"},
+{t:"Aplicaciones",q:"En un trabajo técnico se necesita realizar un dibujo asistido por computadora con herramientas específicas de diseño. ¿Cuál aplicación resulta más adecuada?",o:["Word, porque permite organizar cualquier tipo de documento","Excel, porque permite representar datos en tablas","PowerPoint, porque trabaja con elementos gráficos","AutoCAD, porque está orientado al diseño gráfico/técnico"],a:3,topic:"Software de aplicación"}
+];
+
+let shuffledQuestions = [];
+
+function shuffle(arr){
+ return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function prepareQuiz(){
+ // En cada intento se mezclan tanto las preguntas como las alternativas.
+ shuffledQuestions = shuffle(questions).map(x => {
+   const options = x.o.map((text,index) => ({text, correct:index === x.a}));
+   const mixed = shuffle(options);
+   return {...x, o:mixed.map(v=>v.text), a:mixed.findIndex(v=>v.correct)};
+ });
+}
+
+function render(){
+ prepareQuiz();
+ const box=document.getElementById("quiz");
+ box.innerHTML=shuffledQuestions.map((x,i)=>`
+ <div class="card" id="card${i}">
+ <b>${i+1}. ${x.t}</b><p>${x.q}</p>
+ ${x.o.map((v,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"> ${String.fromCharCode(65+j)}) ${v}</label>`).join("")}
+ <div class="feedback" id="fb${i}"></div>
+ </div>`).join("");
+}
+function grade(){
+ let score=0, answered=0, topics={};
+ shuffledQuestions.forEach((x,i)=>{
+   const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+   const card=document.getElementById(`card${i}`);
+   const fb=document.getElementById(`fb${i}`);
+   card.querySelectorAll(".option").forEach(el=>el.classList.remove("correct","wrong"));
+   if(chosen){
+     answered++;
+     const val=Number(chosen.value);
+     if(val===x.a){score+=100/questions.length; fb.textContent="✓ Correcta"; fb.style.color="green"; chosen.parentElement.classList.add("correct");}
+     else {fb.textContent="✗ Incorrecta. Revisá este saber."; fb.style.color="crimson"; chosen.parentElement.classList.add("wrong");}
+   } else {fb.textContent="⚠ Sin responder"; fb.style.color="#a56a00";}
+   topics[x.topic]=(topics[x.topic]||{ok:0,total:0}); topics[x.topic].total++;
+   if(chosen && Number(chosen.value)===x.a) topics[x.topic].ok++;
+ });
+ score=Math.round(score);
+ let nota = score>=90?"Excelente dominio":score>=70?"Logro satisfactorio":score>=60?"En proceso — requiere revisión":"Necesita recuperar saberes fundamentales";
+ let weak=Object.entries(topics).sort((a,b)=>(a[1].ok/a[1].total)-(b[1].ok/b[1].total)).slice(0,3).map(x=>`${x[0]} (${x[1].ok}/${x[1].total})`).join(" · ");
+ const r=document.getElementById("result");
+ r.style.display="block";
+ r.innerHTML=`<h2>Resultado: ${score}/100 puntos</h2>
+ <p><b>${nota}</b></p>
+ <p>Respondidas: ${answered}/${questions.length}</p>
+ <p><b>Saberes para revisar:</b> ${weak}</p>
+ <p class="small">La corrección se realiza automáticamente según la clave incorporada en el quiz.</p>`;
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+render();
+</script>
+</body>
+</html>
